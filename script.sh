@@ -1,1 +1,1 @@
-dipalidocker15/flask-app-image:v3
+dipalidocker15/flask-app-image:v4
