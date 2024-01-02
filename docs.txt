@@ -1,0 +1,17 @@
+# python app.py
+
+# In Terminal 
+
+# Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+# .\.env\Scripts\activate
+#  pip install pymongo
+#  pip install flask
+#  Use RUN
+
+# Build Image
+
+# docker build -t flask-app-image:v1 .
+
+# Run container
+
+# docker run -d -p 8000:80 --name flask-app-container flask-app-image:v1

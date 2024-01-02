@@ -1,0 +1,205 @@
+ 
+A. Private Docker Hub Project:
+
+Resources Used : 
+
+SCM : github
+CI/CD : jenkins
+Images are stored in : Docker Hub
+Cloud resources : GCP instnace
+________________________________________________________________________________________________________________________________
+
+1. Create one new VM ( private-docker-hub ) 
+
+2. Create new firewall rule for jenkins port no:8080 (Ingress), add tag of this firewall rule into the VM.
+----------------------------------------------------------------------------------------------------------------------------------
+3. Do SSH and install java for jenkins and do jenkins installation following to that.
+
+3.1 : IN SSH
+
+- update all the packages and utilitiles
+
+$ sudo apt-get update
+$ sudo apt update
+
+- install  java firstly on VM 
+
+$ sudo apt install openjdk-17-jdk -y   
+
+$ sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+
+$ echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+$ sudo apt-get update
+
+- Install jenkins
+
+$ sudo apt-get install jenkins  -y 
+
+$ sudo visudo
+
+add this line in this file under 
+
+# User privilege specification
+root    ALL=(ALL:ALL) ALL
+jenkins ALL=(ALL) NOPASSWD: ALL
+
+$ jenkins ALL=(ALL) NOPASSWD: ALL
+
+$ sudo apt update
+
+$ sudo service jenkins start
+$ sudo systemctl enable jenkins
+$ sudo systemctl status jenkins
+$ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+O/P password : e3e985384da04fae9ed8ad98a781731b
+----------------------------------------------------------------------------------------------------------------------
+
+4. GO to public IP of VM and add 8080 port to it :
+
+http://34.93.118.18:8080/
+
+add password : password : e3e985384da04fae9ed8ad98a781731b
+
+Username : Dipali_Dhanwade
+Password : root
+Full name : Dipali Ganesh Dhanwade
+E-mail address : dipali.dhanwade@gmail.com
+
+- Save and Continue 
+- Save and Finish
+-------------------------------------------------------------------------------------------------------------------------
+
+5. Install docker on VM :
+
+$ sudo apt update && sudo apt install -y docker.io
+
+- verify installation:
+
+$ sudo systemctl start docker
+$ sudo systemctl enable docker
+$ sudo systemctl status docker
+
+- check docker version :
+
+$ docker --version
+---------------------------------------------------------------------------------------------------------------
+
+6.Git Hub :
+
+- Create one images folder for docker image on your local system and push it to docker repo.
+
+:ref = https://github.com/dipali-coditas/private-docker-hub-project-repo.git
+
+-----------------------------------------------------------------------------------------------------------------
+
+7.Git clone your repo in VM : 
+
+$ git clone https://github.com/dipali-coditas/private-docker-hub-project-repo.git
+$ ls 
+private-docker-hub-project-repo
+$ cd private-docker-hub-project-repo/
+$ ls
+Dockerfile  app.py  docs  requirements.txt  script.sh  templates
+
+-------------------------------------------------------------------------------------------------------------------
+
+8. Go to jenkins :
+
+1. Create "New Item"
+
+2. Freestyle Project : private-docker-hub-project 
+
+3. Go to configure : 
+
+3.1. Description : Private Docker Hub Project
+
+3.2. Source Code Management -> Git -> Repositories -> Repository URL : < URL of github repo > 
+  -: Source Code Management -> Git -> Repositories -> Repository URL :< https://github.com/dipali-coditas/private-docker-hub-project-repo.git > 
+
+3.3. Build Triggers -> poll SCM : * * * * *
+
+3.4. Build Steps -> Execute shell -> 
+
+sudo rm -rf /home/dipali_dhanwade/private-docker-hub-project-repo
+sudo git clone https://github.com/dipali-coditas/private-docker-hub-project-repo.git /home/dipali_dhanwade/private-docker-hub-project-repo/
+cd /home/dipali_dhanwade/private-docker-hub-project-repo/
+NEXT_TAG=$(cat naming-of-image-tag | tr -d '\r' )
+echo $NEXT_TAG
+sudo docker build -t $NEXT_TAG .
+sudo docker login -u dipalidocker15 -p Exclusive@15
+sudo docker push $NEXT_TAG
+
+3.5 : explaination of above script:
+
+Here is an explanation of what each line in that script is doing:
+
+1. `sudo rm -rf /home/dipali_dhanwade/private-docker-hub-project-repo`
+
+- Use sudo to run command as root
+- `rm -rf`: Removes the specified directory recursively and forcibly
+- Deletes the existing local copy of the repository to ensure a clean copy
+
+2. `sudo git clone https://github.com/dipali-coditas/private-docker-hub-project-repo.git /home/dipali_dhanwade/private-docker-hub-project-repo/`
+
+- Use sudo to run git command as root
+- Clones the github repository to the specified local path
+
+3. `cd /home/dipali_dhanwade/private-docker-hub-project-repo/`
+
+- Changes directory to the cloned repository
+
+4. `NEXT_TAG=$(cat naming-of-image-tag | tr -d '\r')`
+
+- Sets NEXT_TAG variable to the output of command
+- `cat naming-of-image-tag`: Prints content of this file
+- `tr -d '\r'`: Removes any Windows `\r` characters
+- Clean tag value is assigned to NEXT_TAG
+
+5. `echo $NEXT_TAG`
+
+- Prints out the tag variable to confirm value
+
+6. `sudo docker build -t $NEXT_TAG .` 
+
+- Use sudo to run docker command as root 
+- Build docker image using Dockerfile in current directory
+- Tag image with $NEXT_TAG variable
+
+7. Login to docker hub
+
+8. Push built image to docker hub
+
+SUMMARY : 
+
+**1. Title for the Project:**
+"Automated Docker Image Tagging and Deployment with Jenkins CI/CD"
+
+**2. Process Summary:**
+- Create a private VM named "private-docker-hub."
+- Set up firewall rules for Jenkins on port 8080.
+- Install Jenkins and Java on the VM.
+- Configure Jenkins for password-based authentication.
+- Install Docker on the VM.
+- Create a Docker image folder on the local system and push it to the Docker Hub.
+- Clone the GitHub repository on the VM.
+- Configure a Jenkins Freestyle Project named "private-docker-hub-project."
+- Set up Jenkins to poll SCM for changes every minute.
+- Create a build step in Jenkins to:
+  - Remove the existing local copy of the repository.
+  - Clone the GitHub repository.
+  - Read the image tag from a file and build a Docker image.
+  - Log in to Docker Hub.
+  - Push the built Docker image to Docker Hub.
+
+**3. Project Summary:**
+The project automates the process of building, tagging, and deploying Docker images using Jenkins CI/CD. 
+It involves creating a private VM, setting up Jenkins and Docker, and configuring Jenkins to monitor changes in a GitHub repository. 
+When changes are detected, Jenkins triggers a build that includes cloning the repository, reading the image tag from a file, building a Docker image, and pushing it to Docker Hub. 
+This ensures that each version of the image is tagged appropriately and automatically deployed to the Docker repository, streamlining the development and deployment process.
+
+
